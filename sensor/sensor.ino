@@ -9,6 +9,11 @@
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
 #include "DHTesp.h"
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+#define TEMP_SENSOR_BUS 0
+#define HUMIDITY_SENSOR_BUS 14
 
 const char* ssid = "";
 const char* password = "";
@@ -17,6 +22,8 @@ const char* host = "192.168.0.22";
 const int port = 5000;
 
 DHTesp dht;
+OneWire oneWire(TEMP_SENSOR_BUS);
+DallasTemperature sensors(&oneWire);
 
 void setup() {
   Serial.begin(115200);
@@ -34,7 +41,8 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  dht.setup(0, DHTesp::DHT11);
+  dht.setup(HUMIDITY_SENSOR_BUS, DHTesp::DHT11);
+  sensors.begin();
 }
 
 void loop() {
@@ -43,7 +51,9 @@ void loop() {
   //Read temperature
   //Read humidity
   float humidity = dht.getHumidity();
-  float temperature = dht.getTemperature();
+
+  sensors.requestTemperatures();
+  float temperature = sensors.getTempCByIndex(0);
   
   //Read air pressure
   //Send
