@@ -11,6 +11,9 @@
 #include "DHTesp.h"
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BMP280.h>
 
 #define TEMP_SENSOR_BUS 0
 #define HUMIDITY_SENSOR_BUS 14
@@ -24,6 +27,7 @@ const int port = 5000;
 DHTesp dht;
 OneWire oneWire(TEMP_SENSOR_BUS);
 DallasTemperature sensors(&oneWire);
+Adafruit_BMP280 bme;
 
 void setup() {
   Serial.begin(115200);
@@ -43,25 +47,30 @@ void setup() {
 
   dht.setup(HUMIDITY_SENSOR_BUS, DHTesp::DHT11);
   sensors.begin();
+
+  if (!bme.begin()) {  
+    Serial.println("Could not find a valid BMP280 sensor, check wiring!");
+    while (1);
+  }
 }
 
 void loop() {
-
-  //TODO
-  //Read temperature
   //Read humidity
   float humidity = dht.getHumidity();
 
+  //Read temperature
   sensors.requestTemperatures();
   float temperature = sensors.getTempCByIndex(0);
   
   //Read air pressure
+  float airPressure = bme.readPressure();
+  
   //Send
-  send(temperature, humidity, 1012);
+  send(temperature, humidity, airPressure);
   delay(10000);
 }
 
-void send(float temperature, float humidity, word airPressure) {
+void send(float temperature, float humidity, float airPressure) {
   WiFiClient client;
   HTTPClient http;
 
