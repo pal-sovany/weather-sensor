@@ -27,7 +27,6 @@ const int port = 5000;
 DHTesp dht;
 OneWire oneWire(TEMP_SENSOR_BUS);
 DallasTemperature sensors(&oneWire);
-Adafruit_BMP280 bme;
 
 void setup() {
   Serial.begin(115200);
@@ -48,10 +47,6 @@ void setup() {
   dht.setup(HUMIDITY_SENSOR_BUS, DHTesp::DHT11);
   sensors.begin();
 
-  if (!bme.begin()) {  
-    Serial.println("Could not find a valid BMP280 sensor, check wiring!");
-    while (1);
-  }
 }
 
 void loop() {
@@ -61,12 +56,9 @@ void loop() {
   //Read temperature
   sensors.requestTemperatures();
   float temperature = sensors.getTempCByIndex(0);
-  
-  //Read air pressure
-  float airPressure = bme.readPressure();
-  
+    
   //Send
-  send(temperature, humidity, airPressure);
+  send(temperature, humidity);
   delay(10000);
 }
 
@@ -76,7 +68,7 @@ void send(float temperature, float humidity, float airPressure) {
 
   http.begin("http://" + String(host) + ":" + String(port) + "/sensorData");
   http.addHeader("Content-Type", "application/json");
-  http.POST("{\"temperature\": " + String(temperature) + " ,\"humidity\": " + String(humidity) + " ,\"airPressure\": " + String(airPressure) + " }");
+  http.POST("{\"temperature\": " + String(temperature) + " ,\"humidity\": " + String(humidity) + " }");
   http.end();
   
   Serial.println("request sent: {\"temperature\": " + String(temperature) + " ,\"humidity\": " + String(humidity) + " ,\"airPressure\": " + String(airPressure) + " }");
