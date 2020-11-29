@@ -54,7 +54,7 @@ void reconnect() {
     if (client.connect(clientId.c_str())) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish(topic, "hello world");
+      client.publish(topic, "123.9");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -76,6 +76,10 @@ void setup() {
 }
 
 void loop() {
+  if (WiFi.status() != WL_CONNECTED) {
+    setup_wifi();
+  }
+  
   if (!client.connected()) {
     reconnect();
   }
